@@ -30,6 +30,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Sign Up user' })
   @ApiCreatedResponse({
     description: 'User created successfully.',
+    example: { message: 'success' },
   })
   @ApiConflictResponse({
     description: 'user or email already exists',
