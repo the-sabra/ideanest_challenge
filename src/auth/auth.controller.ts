@@ -10,6 +10,7 @@ import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
 import {
+  ApiBody,
   ApiConflictResponse,
   ApiCreatedResponse,
   ApiOperation,
@@ -17,6 +18,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { AuthInterceptor } from 'src/interceptor/auth.interceptor';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @ApiTags('authentication')
 @Controller()
@@ -55,5 +57,26 @@ export class AuthController {
   })
   signin(@Body() signInDto: SignInDto) {
     return this.authService.signIn(signInDto);
+  }
+
+  @Post('/refresh-token')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Refresh token' })
+  @ApiBody({ type: RefreshTokenDto })
+  @ApiResponse({
+    status: 200,
+    description: 'return tokens',
+    example: {
+      accessToken: 'token',
+      refreshToken: 'token',
+      message: 'success',
+    },
+  })
+  @ApiConflictResponse({
+    description: 'Invalid token',
+    example: { message: 'Invalid token' },
+  })
+  refreshToken(@Body() refreshToken: RefreshTokenDto) {
+    return this.authService.refreshToken(refreshToken.refreshToken);
   }
 }

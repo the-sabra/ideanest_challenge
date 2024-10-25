@@ -1,14 +1,19 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { Helper } from './provider/helper.provider';
 import { SignUpDto } from './dto/sign-up.dto';
 import { UserService } from 'src/user/user.service';
 import { SignInDto } from './dto/sign-in.dto';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly helper: Helper,
     private readonly userService: UserService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private readonly configService: ConfigService,
   ) {}
 
   public async signUp(signUpDto: SignUpDto) {
@@ -51,10 +56,46 @@ export class AuthService {
         sub: user.id,
       });
 
-      const refreshToken = this.helper.generateRefreshToken(
-        accessToken.split(' ')[2],
-      );
+      const refreshToken = this.helper.generateRefreshToken(user.id.toString());
+
+      await this.helper.saveTokenToCache(refreshToken, user.id);
+
       return { accessToken, refreshToken };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async refreshToken(refreshToken: string) {
+    try {
+      const userId: string = await this.cacheManager.get(refreshToken);
+
+      if (!userId) {
+        throw new ConflictException('Invalid refresh token');
+      }
+
+      // ensure the token
+      const payload = await this.helper.getRefreshPayload(refreshToken);
+
+      if (payload.sub !== userId.toString()) {
+        throw new ConflictException('Invalid refresh token');
+      }
+
+      await this.cacheManager.del(refreshToken);
+
+      const user = await this.userService.findById(userId);
+      const accessToken = this.helper.generateAccessToken({
+        email: user.email,
+        sub: user.id,
+      });
+
+      const newRefreshToken = this.helper.generateRefreshToken(
+        user.id.toString(),
+      );
+
+      await this.helper.saveTokenToCache(newRefreshToken, user.id);
+
+      return { accessToken, refreshToken: newRefreshToken };
     } catch (error) {
       throw error;
     }
