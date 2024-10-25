@@ -5,7 +5,6 @@ import { UserService } from 'src/user/user.service';
 import { SignInDto } from './dto/sign-in.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -13,7 +12,6 @@ export class AuthService {
     private readonly helper: Helper,
     private readonly userService: UserService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
-    private readonly configService: ConfigService,
   ) {}
 
   public async signUp(signUpDto: SignUpDto) {

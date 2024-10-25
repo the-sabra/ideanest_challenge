@@ -88,6 +88,6 @@ export class OrganizationController {
   })
   async delete(@Param('id') id: string) {
     await this.organizationService.remove(id);
-    return { message: 'Organization deleted successfully' };
+    return { message: 'Organization deleted successfully.' };
   }
 }
