@@ -5,6 +5,7 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-ioredis-yet';
+import { OrganizationModule } from './organization/organization.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { redisStore } from 'cache-manager-ioredis-yet';
     }),
     UserModule,
     AuthModule,
+    OrganizationModule,
   ],
 })
 export class AppModule {}
