@@ -79,4 +79,21 @@ export class AuthController {
   refreshToken(@Body() refreshToken: RefreshTokenDto) {
     return this.authService.refreshToken(refreshToken.refreshToken);
   }
+
+  @Post('/revoke-refresh-token')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Revoke refresh token' })
+  @ApiBody({ type: RefreshTokenDto })
+  @ApiResponse({
+    status: 200,
+    description: 'return message',
+    example: { message: 'Refresh token revoked successfully.' },
+  })
+  @ApiConflictResponse({
+    description: 'Invalid token',
+    example: { message: 'Invalid token' },
+  })
+  revokeRefreshToken(@Body() refreshToken: RefreshTokenDto) {
+    return this.authService.logout(refreshToken.refreshToken);
+  }
 }

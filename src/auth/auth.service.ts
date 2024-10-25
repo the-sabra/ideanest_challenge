@@ -100,4 +100,19 @@ export class AuthService {
       throw error;
     }
   }
+
+  public async logout(refreshToken: string) {
+    try {
+      const token = await this.cacheManager.get(refreshToken);
+
+      if (!token) {
+        throw new ConflictException('Invalid token');
+      }
+
+      await this.cacheManager.del(refreshToken);
+      return { message: 'Refresh token revoked successfully.' };
+    } catch (error) {
+      throw error;
+    }
+  }
 }
