@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -11,23 +15,46 @@ export class UserService {
     @InjectModel(User.name) private userModel: mongoose.Model<User>,
   ) {}
 
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    return await this.userModel.create(createUserDto).catch((error) => {
+      if (error.code === 11000) {
+        throw new BadRequestException('Email already exists');
+      }
+      throw new InternalServerErrorException();
+    });
   }
 
   findAll(): Promise<User[]> {
     return this.userModel.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findById(id: string) {
+    const user = await this.userModel.findById(id);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    return user;
+  }
+
+  async findByEmail(email: string) {
+    const user = await this.userModel.findOne({
+      email,
+    });
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    return user;
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+    return this.userModel.updateOne({ _id: id }, updateUserDto);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: string) {
+    const user = await this.userModel.deleteOne({ _id: id });
+    if (user.deletedCount === 0) {
+      throw new BadRequestException('User not found');
+    }
+    return user;
   }
 }
