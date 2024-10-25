@@ -40,9 +40,7 @@ export class UserService {
     const user = await this.userModel.findOne({
       email,
     });
-    if (!user) {
-      throw new BadRequestException('User not found');
-    }
+
     return user;
   }
 
